@@ -53,7 +53,7 @@ if __name__=="__main__":
                     track = mido.MidiTrack()
                     midiFile.tracks.append(track)
                     tracks.append(track)
-                    track.append(mido.Message("program_change", program=i, time=0))
+                    track.append(mido.Message("program_change", program=i, channel=i, time=0))
                     times.append(0)
 
                 # Build the MIDI file
@@ -62,18 +62,18 @@ if __name__=="__main__":
                     for j, note in enumerate(chord):
                         # If the note is different from the last one and the last one is not -1, turn it off
                         if note != lastChord[j] and lastChord[j] != -1:
-                            tracks[j].append(mido.Message("note_off", note=int(lastChord[j]+transposition), velocity=64, time=(i*quantizationTime) - times[j] - 1))
+                            tracks[j].append(mido.Message("note_off", note=int(lastChord[j]+transposition), velocity=64, channel=j, time=(i*quantizationTime) - times[j] - 1))
                             times[j] = i*quantizationTime
 
                     
                     for j, note in enumerate(chord):
                         if note != lastChord[j]:
-                            tracks[j].append(mido.Message("note_on", note=int(note+transposition), velocity=64, time=0 if i == 0 and j == 0 else 1))
+                            tracks[j].append(mido.Message("note_on", note=int(note+transposition), velocity=64, channel=j, time=0 if i == 0 and j == 0 else 1))
                             lastChord[j] = note
 
                 # Notes off at the end
                 for i in range(len(lastChord)):
-                    tracks[i].append(mido.Message("note_off", note=int(lastChord[i]+transposition), velocity=64, time=midiFile.ticks_per_beat*4))
+                    tracks[i].append(mido.Message("note_off", note=int(lastChord[i]+transposition), velocity=64, channel=i, time=midiFile.ticks_per_beat*4))
 
                 if args.twelveKeysTranspose:
                     midiFilename = f"midi-outputs/{subset}/chorale_{subset}_{n:03d}_{transposition:02d}.mid"
